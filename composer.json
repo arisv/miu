@@ -1,5 +1,12 @@
 {
+    "autoload":{
+        "psr-4":{
+            "Meow\\": "src/"
+        }
+    },
     "require": {
-        "silex/silex": "~2.0"
+        "silex/silex": "~2.0",
+        "twbs/bootstrap": "^3.3",
+        "twig/twig": "^1.31"
     }
 }
