@@ -1,0 +1,6 @@
+<?php
+$miu_config = array();
+$miu_config['db_host'] = '127.0.0.1';
+$miu_config['db_dbase'] = 'miubase';
+$miu_config['db_username'] = 'replacewithaname';
+$miu_config['db_password'] = 'replacewithapassword';
