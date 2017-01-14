@@ -13,9 +13,13 @@ namespace Meow
         {
             if($request->files->has('meowfile'))
             {
+                /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
                 $file = $request->files->get('meowfile');
                 if(!empty($file) && $file->isValid())
-                    return $file->getClientOriginalName();
+                {
+                    $shahash = sha1_file($file->getPathName());
+                    return $file->getClientOriginalName() . 'Sha-1: ' . $shahash;
+                }
                 else
                     return "No file specified";
 
