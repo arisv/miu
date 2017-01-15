@@ -43,8 +43,10 @@ $app->get('/deploydb/', function () use ($app, $miu_config) {
             original_name varchar(255) NOT NULL,
             internal_name varchar(255) NOT NULL,
             custom_url varchar(255) NULL,
+            service_url varchar(255) NULL,
             original_extension varchar(255) NULL,
-            internal_filecategory INT UNSIGNED NOT NULL,
+            internal_mimetype varchar(255) NULL,
+            internal_size INT UNSIGNED NOT NULL,
             date INT UNSIGNED NOT NULL,
             visibility_status INT NOT NULL DEFAULT 1,
             PRIMARY KEY(id));';
