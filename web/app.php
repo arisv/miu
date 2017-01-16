@@ -29,6 +29,17 @@ $app->get('/', function() use ($app) {
 
 $app->post('/getfile/','Meow\\FileLoader::AddNewFile');
 
+//serve direct link to images
+$app->get('/i/{customUrl}.png', 'Meow\\FileLoader::ServeFileDirect');
+
+//serve generic file page
+$app->get('/i/{customUrl}/', 'Meow\\FileLoader::ServeFile')
+    ->assert('serviceUrl', '\w{10}\b');;
+
+//serve service page
+$app->get('/i/{serviceUrl}/', 'Meow\\FileLoader::ServeFileService')
+    ->assert('serviceUrl', '\w{32}\b');
+
 /*
  * Run first time to deploy the database
  * */

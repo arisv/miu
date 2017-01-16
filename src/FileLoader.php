@@ -26,10 +26,66 @@ namespace Meow
             return "Wtf";
         }
 
-        public function AddFileToStorage(\Symfony\Component\HttpFoundation\File\UploadedFile $file,
+        public function ServeFileDirect(Request $request, Application $app, $customUrl)
+        {
+            $result = $this->LookupFile($app, $customUrl, 'direct');
+            if($result['result'] == 'ok')
+            {
+                dump('Serving: ' . $result['path']);
+                return $app->sendFile($result['path']);
+            }
+            return "Not found";
+        }
+
+        public function ServeFileGeneric(Request $request, Application $app, $customUrl)
+        {
+            dump($customUrl);
+            return $customUrl;
+        }
+
+        public function ServeFileService(Request $request, Application $app, $serviceUrl)
+        {
+            dump($serviceUrl);
+            return $serviceUrl;
+        }
+
+        private function LookupFile(Application $app, $fileid, $type)
+        {
+            $status = array(
+                'result' => 'error',
+                'path' => ''
+            );
+            $routes = array(
+                'direct' => 'custom_url'
+            );
+            /** @var \Doctrine\DBAL\Connection $db */
+            $db = $app['db'];
+            $qb = $db->createQueryBuilder();
+            $qb->select('*')
+                ->from('filestorage')
+                ->where($routes[$type] . ' = ?' )
+                ->setParameter(0, $fileid);
+            $result = $qb->execute();
+            $rows = $result->fetchAll();
+            if(!empty($rows)) //we have an image, yay!
+            {
+                $filedata = $rows[0];
+                $dt = new \DateTime();
+                $dt->setTimestamp($filedata['date']);
+                $path = __DIR__.'/../storage/'.$dt->format('Y-m').'/'.$filedata['internal_name'];
+                if(file_exists($path))
+                {
+                    $status['result'] = 'ok';
+                    $status['path'] = $path;
+                }
+            }
+            return $status;
+
+        }
+
+        private function AddFileToStorage(\Symfony\Component\HttpFoundation\File\UploadedFile $file,
                                          \Doctrine\DBAL\Connection $db)
         {
-            $stats = "";
             $originalName = $file->getClientOriginalName(); //Original filename supplied by client
             $sha = sha1_file($file->getPathName()); //filename to be used internally
             $fileSize = $file->getSize(); //filesize
@@ -48,15 +104,6 @@ namespace Meow
             do{
                 $customUrl = $this->GenerateCustomUrl(); //shorter custom URL like example.com/qafsds.jpg
             }while(!$this->AssertUniqueness($customUrl, 'custom_url', $db));
-
-            /*$stats .= $originalName . "\n" .
-                'Int name: '.$internalFilename . "\n" .
-                $fileSize . "\n" .
-                'Custom URL: '.$customUrl . "\n" .
-                'Service URL: '.$serviceUrl . "\n" .
-                $originalExtension . "\n" .
-                $mimetype . "\n" .
-                $moveFolder;*/
 
             $path = __DIR__.'/../storage/'.$moveFolder.'/';
             $movestatus = true;
