@@ -13,15 +13,15 @@
                     <h1 class="text-center mrgb30">Login</h1>
 
                     <div class="form-group l-sign-form-group">
-                        <label for="login-email" class="sr-only">Email</label>
-                        <i class="ion ion-email"></i>
-                        <input name="loginEmail" type="email" class="form-control" id="login-email" placeholder="Email">
+                        {{ form_label(form.email, "Email", {'label_attr': {'class':'sr-only'} }) }}
+                        {{ form_errors(form.email) }}
+                        {{ form_widget(form.email, {'attr':{'class': 'form-control', 'placeholder': 'Email'}}) }}
                     </div>
 
                     <div class="form-group l-sign-form-group">
-                        <label for="login-pass" class="sr-only">Password</label>
-                        <i class="ion ion-ios-locked"></i>
-                        <input name="loginPassword" type="password" class="form-control" id="login-pass" placeholder="Password">
+                        {{ form_label(form.password, "Password", {'label_attr': {'class':'sr-only'} }) }}
+                        {{ form_errors(form.password) }}
+                        {{ form_widget(form.password, {'attr':{'class': 'form-control', 'placeholder': 'Password'}}) }}
                     </div>
 
                     <div class="l-sign-inner">

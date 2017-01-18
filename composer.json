@@ -9,6 +9,11 @@
         "twbs/bootstrap": "^3.3",
         "twig/twig": "^1.31",
         "doctrine/dbal": "~2.2",
-        "symfony/var-dumper": "^3.2"
+        "symfony/var-dumper": "^3.2",
+        "symfony/form": "^3.2",
+        "symfony/validator": "^3.2",
+        "symfony/config": "^3.2",
+        "symfony/translation": "^3.2",
+        "symfony/twig-bridge": "^3.2"
     }
 }

@@ -5,9 +5,17 @@ require_once __DIR__.'/../vendor/autoload.php';
 require_once __DIR__.'/../config/config.php';
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Validator\Constraints as Assert;
 
 $app = new Silex\Application();
 $app['debug'] = true;
+$app['usermanager.service'] = function($app) {
+    return new \Meow\UserManager($app['db']);
+};
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => array(
         'driver' => 'pdo_mysql',
@@ -21,6 +29,14 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path' => __DIR__.'/../views'
 ));
+
+$app->register(new Silex\Provider\FormServiceProvider());
+$app->register(new Silex\Provider\LocaleServiceProvider());
+$app->register(new Silex\Provider\TranslationServiceProvider(), array(
+    'translator.domains' => array(),
+));
+$app->register(new Silex\Provider\ValidatorServiceProvider());
+
 $app->register(new Silex\Provider\VarDumperServiceProvider());
 $app->register(new Silex\Provider\SessionServiceProvider());
 $app['session.storage.options'] = array(
@@ -44,12 +60,68 @@ $app->get('/i/{customUrl}/', 'Meow\\FileLoader::ServeFile')
 $app->get('/i/{serviceUrl}/', 'Meow\\FileLoader::ServeFileService')
     ->assert('serviceUrl', '\w{32}\b');
 
-$app->get('/signup/', function () use ($app) {
-    return $app['twig']->render('signup.twig');
+$app->match('/signup/', function (Request $request) use ($app) {
+    $data = array(
+        'login' => '',
+        'email' => '',
+        'password' => '',
+        'password_r' => ''
+    );
+
+    /** @var Symfony\Component\Form\Form $form */
+    $form = $app['form.factory']->createBuilder(FormType::class, $data)
+        ->add('login', TextType::class, array(
+            'constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 4)))
+        ))
+        ->add('email', TextType::class, array(
+            'constraints' => array(new Assert\Email())
+        ))
+        ->add('password', RepeatedType::class, array(
+            'type' => PasswordType::class,
+            'invalid_message' => 'The password fields must match.',
+            'options' => array('attr' => array('class' => 'password-field')),
+            'required' => true,
+        ))
+        ->getForm();
+
+
+    $form->handleRequest($request);
+    if($form->isValid())
+    {
+        $data = $form->getData();
+        dump($data);
+        return "Check console";
+    }
+
+    return $app['twig']->render('signup.twig', array('form' => $form->createView()));
+
 });
 
-$app->get('/login/', function () use ($app) {
-    return $app['twig']->render('loginpage.twig');
+$app->match('/login/', function (Request $request) use ($app) {
+    $data = array(
+        'email' => '',
+        'password' => ''
+    );
+
+    /** @var Symfony\Component\Form\Form $form */
+    $form = $app['form.factory']->createBuilder(FormType::class, $data)
+        ->add('email', TextType::class, array(
+            'constraints' => array(new Assert\Email())
+        ))
+        ->add('password', PasswordType::class, array(
+            'constraints' => array(new Assert\NotBlank())
+        ))
+        ->getForm();
+
+    $form->handleRequest($request);
+    if($form->isValid())
+    {
+        $data = $form->getData();
+        dump($data);
+        return "Check console";
+    }
+
+    return $app['twig']->render('loginpage.twig', array('form' => $form->createView()));
 });
 
 $app->post('/test/', function (Request $request) {

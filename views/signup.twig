@@ -12,24 +12,27 @@
                     <h1 class="text-center mrgb30">Sign up </h1>
 
                     <div class="form-group l-sign-form-group">
-                        <label for="register-email" class="sr-only">Email</label>
-                        <input type="email" name="registerEmail" class="form-control" id="register-email" placeholder="Email">
+                        {{ form_label(form.login, "Username", {'label_attr': {'class':'sr-only'} }) }}
+                        {{ form_errors(form.login) }}
+                        {{ form_widget(form.login, {'attr':{'class': 'form-control', 'placeholder': 'Username'}}) }}
                     </div>
 
                     <div class="form-group l-sign-form-group">
-                        <label for="register-login" class="sr-only">Login/label>
-                        <input type="text" name="registerLogin" class="form-control" id="register-login" placeholder="Login">
-                    </div>
-
-
-                    <div class="form-group l-sign-form-group">
-                        <label for="register-pass" class="sr-only">Password</label>
-                        <input type="password" name="registerPass" class="form-control" id="register-pass" placeholder="Password">
+                        {{ form_label(form.email, "Email", {'label_attr': {'class':'sr-only'} }) }}
+                        {{ form_errors(form.email) }}
+                        {{ form_widget(form.email, {'attr':{'class': 'form-control', 'placeholder': 'Email'}}) }}
                     </div>
 
                     <div class="form-group l-sign-form-group">
-                        <label for="register-pass-r" class="sr-only">Password</label>
-                        <input type="password" name="registerPassCheck" class="form-control" id="register-pass-r" placeholder="Repeat password">
+                        {{ form_label(form.password.first, "Password", {'label_attr': {'class':'sr-only'} }) }}
+                        {{ form_errors(form.password.first) }}
+                        {{ form_widget(form.password.first, {'attr':{'class': 'form-control', 'placeholder': 'Password'}}) }}
+                    </div>
+
+                    <div class="form-group l-sign-form-group">
+                        {{ form_label(form.password.second, "Repeat password", {'label_attr': {'class':'sr-only'} }) }}
+                        {{ form_errors(form.password.second) }}
+                        {{ form_widget(form.password.second, {'attr':{'class': 'form-control', 'placeholder': 'Repeat password'}}) }}
                     </div>
 
                     <div class="l-sign-inner">
