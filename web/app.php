@@ -13,9 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 $app = new Silex\Application();
 $app['debug'] = true;
-$app['usermanager.service'] = function($app) use ($miu_config) {
-    return new \Meow\UserManager($app, $miu_config);
-};
+
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => array(
         'driver' => 'pdo_mysql',
@@ -43,6 +41,24 @@ $app['session.storage.options'] = array(
     'lifetime' => 90000
 );
 
+//runs before every request
+$app->before(function () use ($app, $miu_config) {
+    $ums = new \Meow\UserManager($app, $miu_config);
+    $app['usermanager.service'] = $ums;
+
+    if($ums->HasLoggedUser())
+    {
+        $currentUser = $ums->GetCurrentUserData();
+        $app['usermanager.service.loggedUser'] = $currentUser;
+        $app['twig']->addGlobal('userLogged', true);
+        $app['twig']->addGlobal('userName', $currentUser->GetName());
+    }
+    else
+        $app['twig']->addGlobal('userLogged', false);
+
+
+
+});
 //serve direct link to images
 $app->get('/i/{customUrl}.png', 'Meow\\FileLoader::ServeFileDirect');
 
@@ -66,6 +82,9 @@ $app->post('/getfile/','Meow\\FileLoader::AddNewFile');
 $app->match('/signup/', function (Request $request) use ($app) {
     /** @var \Meow\UserManager $userManager */
     $userManager = $app['usermanager.service'];
+
+    if($userManager->HasLoggedUser())
+        return $app->redirect('/');
 
     $data = array(
         'login' => '',
@@ -100,7 +119,7 @@ $app->match('/signup/', function (Request $request) use ($app) {
         $data = $form->getData();
         $result = $userManager->CreateUser($data['login'], $data['email'], $data['password']);
         if($result['success'] === true)
-            return "Account created";
+            return $app['twig']->render('message.twig', array('text' => 'Your account has been created, you can now log in'));
         else
         {
             dump($result);
@@ -142,7 +161,7 @@ $app->match('/login/', function (Request $request) use ($app) {
         $result = $userManager->Login($data['email'], $data['password']);
         if($result)
         {
-            return "Account created";
+            return $app->redirect('/');
         }
         else
         {
@@ -152,6 +171,15 @@ $app->match('/login/', function (Request $request) use ($app) {
     }
 
     return $app['twig']->render('loginpage.twig', array('form' => $form->createView()));
+});
+
+$app->get('/logout/', function () use ($app) {
+    /** @var \Meow\UserManager $userManager */
+    $userManager = $app['usermanager.service'];
+
+    $userManager->Logout();
+
+    return $app->redirect('/');
 });
 
 

@@ -111,7 +111,7 @@ class UserManager
 
     public function Logout()
     {
-
+        $this->session->set('currentUser', null);
     }
 
     public function GetCurrentUserData()

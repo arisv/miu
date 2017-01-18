@@ -19,4 +19,9 @@ class User
         $this->remoteToken = $remoteToken;
         $this->role = $role; //1 - user, 2 - admin
     }
+
+    public function GetName()
+    {
+        return $this->login;
+    }
 }
