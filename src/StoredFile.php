@@ -131,11 +131,11 @@ namespace Meow
 
             do{
                 $rowData['service_url'] = bin2hex(openssl_random_pseudo_bytes(16)); //URL for client to delete the image
-            }while(!StoredFile::AssertUniqueness($rowData['service_url'], 'service_url', $db));
+            }while(!Util::AssertUniqueness('filestorage', $rowData['service_url'], 'service_url', $db));
 
             do{
-                $rowData['custom_url'] = StoredFile::GenerateCustomUrl(); //shorter custom URL like example.com/qafsds.jpg
-            }while(!StoredFile::AssertUniqueness($rowData['custom_url'], 'custom_url', $db));
+                $rowData['custom_url'] = Util::GenerateCustomUrl(); //shorter custom URL like example.com/qafsds.jpg
+            }while(!Util::AssertUniqueness('filestorage', $rowData['custom_url'], 'custom_url', $db));
 
             dump('Creating new StoreFile');
             $fileToStore = new StoredFile($rowData);
@@ -149,41 +149,5 @@ namespace Meow
                 return null;
         }
 
-        private static function AssertUniqueness($url, $field, Connection $db)
-        {
-            $test = $db->query('SELECT * FROM filestorage WHERE '.$field.' = "'.$url.'"');
-            if($test->rowCount() > 0)
-                return false;
-            else
-                return true;
-        }
-
-        private static function GenerateCustomUrl()
-        {
-            $token = "";
-            $alphabet = "123456789abcdefghijklmnopqrstuvwkyz";
-            $alphabetLength = strlen($alphabet);
-            $length = 10;
-            for ($i = 0; $i < $length; $i++) {
-                $token .= $alphabet[StoredFile::RandomOffset(0, $alphabetLength)];
-            }
-            return $token;
-
-        }
-
-        private static function RandomOffset($min, $max)
-        {
-            $range = $max - $min;
-            if ($range < 1) return $min; // not so random...
-            $log = ceil(log($range, 2));
-            $bytes = (int)($log / 8) + 1; // length in bytes
-            $bits = (int)$log + 1; // length in bits
-            $filter = (int)(1 << $bits) - 1; // set all lower bits to 1
-            do {
-                $rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
-                $rnd = $rnd & $filter; // discard irrelevant bits
-            } while ($rnd >= $range);
-            return $min + $rnd;
-        }
     }
 }

@@ -13,8 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 $app = new Silex\Application();
 $app['debug'] = true;
-$app['usermanager.service'] = function($app) {
-    return new \Meow\UserManager($app['db']);
+$app['usermanager.service'] = function($app) use ($miu_config) {
+    return new \Meow\UserManager($app['db'], $miu_config);
 };
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => array(
@@ -60,6 +60,7 @@ $app->get('/i/{customUrl}/', 'Meow\\FileLoader::ServeFile')
 $app->get('/i/{serviceUrl}/', 'Meow\\FileLoader::ServeFileService')
     ->assert('serviceUrl', '\w{32}\b');
 
+//create account page
 $app->match('/signup/', function (Request $request) use ($app) {
     $data = array(
         'login' => '',
@@ -79,7 +80,10 @@ $app->match('/signup/', function (Request $request) use ($app) {
         ->add('password', RepeatedType::class, array(
             'type' => PasswordType::class,
             'invalid_message' => 'The password fields must match.',
-            'options' => array('attr' => array('class' => 'password-field')),
+            'options' => array(
+                'attr' => array('class' => 'password-field'),
+                'constraints' => array(new Assert\NotBlank(), new Assert\Length(array('min' => 7))),
+                ),
             'required' => true,
         ))
         ->getForm();
@@ -89,14 +93,23 @@ $app->match('/signup/', function (Request $request) use ($app) {
     if($form->isValid())
     {
         $data = $form->getData();
-        dump($data);
-        return "Check console";
+        /** @var \Meow\UserManager $userManager */
+        $userManager = $app['usermanager.service'];
+        $result = $userManager->CreateUser($data['login'], $data['email'], $data['password']);
+        if($result['success'] === true)
+            return "Account created";
+        else
+        {
+            dump($result);
+            return "Creation error";
+        }
     }
 
     return $app['twig']->render('signup.twig', array('form' => $form->createView()));
 
 });
 
+//log in page
 $app->match('/login/', function (Request $request) use ($app) {
     $data = array(
         'email' => '',
@@ -117,12 +130,21 @@ $app->match('/login/', function (Request $request) use ($app) {
     if($form->isValid())
     {
         $data = $form->getData();
-        dump($data);
-        return "Check console";
+        /** @var \Meow\UserManager $userManager */
+        $userManager = $app['usermanager.service'];
+        $result = $userManager->Login($data['email'], $data['password']);
+        if($result)
+            return "Account created";
+        else
+        {
+            dump($result);
+            return "Creation error";
+        }
     }
 
     return $app['twig']->render('loginpage.twig', array('form' => $form->createView()));
 });
+
 
 $app->post('/test/', function (Request $request) {
     dump($request->request->get('private_key'));
