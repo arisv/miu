@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 $app = new Silex\Application();
 $app['debug'] = true;
 $app['usermanager.service'] = function($app) use ($miu_config) {
-    return new \Meow\UserManager($app['db'], $miu_config);
+    return new \Meow\UserManager($app, $miu_config);
 };
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
     'db.options' => array(
@@ -43,25 +43,30 @@ $app['session.storage.options'] = array(
     'lifetime' => 90000
 );
 
+//serve direct link to images
+$app->get('/i/{customUrl}.png', 'Meow\\FileLoader::ServeFileDirect');
+
+//serve generic file page (with links)
+$app->get('/i/{customUrl}/', 'Meow\\FileLoader::ServeFile')
+    ->assert('serviceUrl', '\w{10}\b');;
+
+//serve service page for a file
+$app->get('/i/{serviceUrl}/', 'Meow\\FileLoader::ServeFileService')
+    ->assert('serviceUrl', '\w{32}\b');
+
+//homepage
 $app->get('/', function() use ($app) {
     return $app['twig']->render('homepage.twig');
 });
 
+//upload file requests go here
 $app->post('/getfile/','Meow\\FileLoader::AddNewFile');
-
-//serve direct link to images
-$app->get('/i/{customUrl}.png', 'Meow\\FileLoader::ServeFileDirect');
-
-//serve generic file page
-$app->get('/i/{customUrl}/', 'Meow\\FileLoader::ServeFile')
-    ->assert('serviceUrl', '\w{10}\b');;
-
-//serve service page
-$app->get('/i/{serviceUrl}/', 'Meow\\FileLoader::ServeFileService')
-    ->assert('serviceUrl', '\w{32}\b');
 
 //create account page
 $app->match('/signup/', function (Request $request) use ($app) {
+    /** @var \Meow\UserManager $userManager */
+    $userManager = $app['usermanager.service'];
+
     $data = array(
         'login' => '',
         'email' => '',
@@ -93,8 +98,6 @@ $app->match('/signup/', function (Request $request) use ($app) {
     if($form->isValid())
     {
         $data = $form->getData();
-        /** @var \Meow\UserManager $userManager */
-        $userManager = $app['usermanager.service'];
         $result = $userManager->CreateUser($data['login'], $data['email'], $data['password']);
         if($result['success'] === true)
             return "Account created";
@@ -111,6 +114,12 @@ $app->match('/signup/', function (Request $request) use ($app) {
 
 //log in page
 $app->match('/login/', function (Request $request) use ($app) {
+    /** @var \Meow\UserManager $userManager */
+    $userManager = $app['usermanager.service'];
+
+    if($userManager->HasLoggedUser())
+        return $app->redirect('/');
+
     $data = array(
         'email' => '',
         'password' => ''
@@ -130,15 +139,15 @@ $app->match('/login/', function (Request $request) use ($app) {
     if($form->isValid())
     {
         $data = $form->getData();
-        /** @var \Meow\UserManager $userManager */
-        $userManager = $app['usermanager.service'];
         $result = $userManager->Login($data['email'], $data['password']);
         if($result)
+        {
             return "Account created";
+        }
         else
         {
             dump($result);
-            return "Creation error";
+            return "Login error";
         }
     }
 
