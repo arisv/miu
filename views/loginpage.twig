@@ -1,0 +1,41 @@
+{% extends 'base_layout.twig' %}
+
+{% block title %}
+    MeowUpload - home
+{% endblock %}
+
+{% block maincontent %}
+    <div id="uploader">
+        <div class="row">
+            <div class="col-md-2 col-md-offset-5">
+                <form class="form" data-act="login" id="login-form" method="post">
+
+                    <h1 class="text-center mrgb30">Login</h1>
+
+                    <div class="form-group l-sign-form-group">
+                        <label for="login-email" class="sr-only">Email</label>
+                        <i class="ion ion-email"></i>
+                        <input name="loginEmail" type="email" class="form-control" id="login-email" placeholder="Email">
+                    </div>
+
+                    <div class="form-group l-sign-form-group">
+                        <label for="login-pass" class="sr-only">Password</label>
+                        <i class="ion ion-ios-locked"></i>
+                        <input name="loginPassword" type="password" class="form-control" id="login-pass" placeholder="Password">
+                    </div>
+
+                    <div class="l-sign-inner">
+
+                        <div class="alert alert-danger hidden">ERROR</div>
+
+                        <div class="l-sign-btn">
+                            <button id="login-form-button" type="submit" class="btn btn-primary btn-wmid">Log in</button>
+                        </div>
+
+                    </div><!-- /.l-sign-inner -->
+
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

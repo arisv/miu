@@ -21,3 +21,18 @@
 #uploader{
     padding-top: 100px;
 }
+
+#loginpanel{
+    margin-top: 10px;
+    padding-left: 40px;
+}
+
+.header{
+    height: 40px;
+    background-color: #491080;
+    color: white;
+}
+
+.header a{
+    color: #ffa800;
+}

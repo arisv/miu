@@ -19,7 +19,7 @@ namespace Meow
                     dump('Uploading file:');
                     $storedFile = StoredFile::AddFileToStorage($file, $app['db']);
                     if($storedFile)
-                        return "Upload Successful";
+                        return "Upload Successful :" . $storedFile->GetCustomUrl();
                     else
                         return "Upload Failed";
                 } else

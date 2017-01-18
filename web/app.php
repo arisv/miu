@@ -4,6 +4,8 @@
 require_once __DIR__.'/../vendor/autoload.php';
 require_once __DIR__.'/../config/config.php';
 
+use Symfony\Component\HttpFoundation\Request;
+
 $app = new Silex\Application();
 $app['debug'] = true;
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
@@ -20,8 +22,10 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path' => __DIR__.'/../views'
 ));
 $app->register(new Silex\Provider\VarDumperServiceProvider());
-
-
+$app->register(new Silex\Provider\SessionServiceProvider());
+$app['session.storage.options'] = array(
+    'lifetime' => 90000
+);
 
 $app->get('/', function() use ($app) {
     return $app['twig']->render('homepage.twig');
@@ -39,6 +43,19 @@ $app->get('/i/{customUrl}/', 'Meow\\FileLoader::ServeFile')
 //serve service page
 $app->get('/i/{serviceUrl}/', 'Meow\\FileLoader::ServeFileService')
     ->assert('serviceUrl', '\w{32}\b');
+
+$app->get('/signup/', function () use ($app) {
+    return $app['twig']->render('signup.twig');
+});
+
+$app->get('/login/', function () use ($app) {
+    return $app['twig']->render('loginpage.twig');
+});
+
+$app->post('/test/', function (Request $request) {
+    dump($request->request->get('private_key'));
+    return "Key: ".$request->request->get('private_key');
+});
 
 /*
  * Run first time to deploy the database
@@ -63,6 +80,23 @@ $app->get('/deploydb/', function () use ($app, $miu_config) {
             PRIMARY KEY(id));';
         $result = $db->query($query);
     }
+
+    $tableName = 'users';
+    $result = $db->query('SHOW TABLES LIKE "'.$tableName.'"');
+    if($result->rowCount() == 0)
+    {
+        $query = 'CREATE TABLE '.$tableName.'(
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            login TEXT NOT NULL,
+            email varchar(255) NOT NULL,
+            password TEXT NOT NULL,
+            remote_token varchar(255) NULL,
+            role INT NOT NULL DEFAULT 1,
+            active INT NOT NULL DEFAULT 1,
+            PRIMARY KEY(id));';
+        $result = $db->query($query);
+    }
+
     return "Script finished";
 });
 

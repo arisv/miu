@@ -7,19 +7,28 @@
 
     {% block stylesheets %}
         <!--hmm-->
-        <link href="css/bootstrap.css" rel="stylesheet">
-        <link href="css/bootstrap-theme.css" rel="stylesheet">
-        <link href="css/main.css" rel="stylesheet">
+        <link href="/css/bootstrap.css" rel="stylesheet">
+        <link href="/css/bootstrap-theme.css" rel="stylesheet">
+        <link href="/css/main.css" rel="stylesheet">
     {% endblock %}
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
+<div class="header">
+    <div class="container">
+        <div id="loginpanel" class="col-md-2 col-md-offset-10 col-xs-12">
+            <a href="/login/">Login</a> or <a href="/signup/">Sign up</a>
+        </div>
+    </div>
+</div>
 <div class="container">
     {% block maincontent %}
 
     {% endblock %}
 </div>
+<div class="footer">
 
+</div>
 {% block javascripts %}
     <script src="/js/jquery-3.1.1.js"></script>
     <script src="/js/bootstrap.js"></script>

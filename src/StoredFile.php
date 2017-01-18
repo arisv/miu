@@ -115,7 +115,7 @@ namespace Meow
 
         public function GetCustomUrl()
         {
-            return $_SERVER['SERVER_NAME'] . '/i/' . $this->customUrl . '.png';
+            return 'http://'.$_SERVER['SERVER_NAME'] . '/i/' . $this->customUrl . '.png';
         }
 
         public static function AddFileToStorage(UploadedFile $file, Connection $db)
