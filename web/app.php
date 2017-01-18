@@ -45,6 +45,7 @@ $app['session.storage.options'] = array(
 $app->before(function () use ($app, $miu_config) {
     $ums = new \Meow\UserManager($app, $miu_config);
     $app['usermanager.service'] = $ums;
+    $app['usermanager.service.loggedUser'] = null;
 
     if($ums->HasLoggedUser())
     {
@@ -182,6 +183,16 @@ $app->get('/logout/', function () use ($app) {
     return $app->redirect('/');
 });
 
+$app->get('/manage/', function () use ($app){
+    /** @var \Meow\UserManager $userManager */
+    $userManager = $app['usermanager.service'];
+
+    if(!$userManager->HasLoggedUser())
+        return $app->redirect('/login/');
+
+    return $app['usermanager.service.loggedUser']->GetRemoteToken();
+
+});
 
 $app->post('/test/', function (Request $request) {
     dump($request->request->get('private_key'));
@@ -225,6 +236,17 @@ $app->get('/deploydb/', function () use ($app, $miu_config) {
             role INT NOT NULL DEFAULT 1,
             active INT NOT NULL DEFAULT 1,
             PRIMARY KEY(id));';
+        $result = $db->query($query);
+    }
+
+    $tableName = 'uploadlog';
+    $result = $db->query('SHOW TABLES LIKE "'.$tableName.'"');
+    if($result->rowCount() == 0)
+    {
+        $query = 'CREATE TABLE '.$tableName.'(
+            image_id INT UNSIGNED NOT NULL,
+            user_id INT UNSIGNED NOT NULL
+            );';
         $result = $db->query($query);
     }
 

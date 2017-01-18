@@ -20,8 +20,18 @@ class User
         $this->role = $role; //1 - user, 2 - admin
     }
 
+    public function GetID()
+    {
+        return $this->id;
+    }
+
     public function GetName()
     {
         return $this->login;
+    }
+
+    public function GetRemoteToken()
+    {
+        return $this->remoteToken;
     }
 }

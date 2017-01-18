@@ -17,7 +17,7 @@ namespace Meow
                 $file = $request->files->get('meowfile');
                 if (!empty($file) && $file->isValid()) {
                     dump('Uploading file:');
-                    $storedFile = StoredFile::AddFileToStorage($file, $app['db']);
+                    $storedFile = StoredFile::AddFileToStorage($file, $app['db'], $app['usermanager.service']);
                     if($storedFile)
                         return "Upload Successful :" . $storedFile->GetCustomUrl();
                     else
@@ -27,8 +27,9 @@ namespace Meow
             }
             else if($request->files->has('meowfile_remote')){
                 $file = $request->files->get('meowfile_remote');
+                $remoteToken = $request->request->get('private_key');
                 if (!empty($file) && $file->isValid()){
-                    $storedFile = StoredFile::AddFileToStorage($file, $app['db']);
+                    $storedFile = StoredFile::AddFileToStorage($file, $app['db'], $app['usermanager.service'], $remoteToken);
                     if($storedFile)
                     {
                         $jsn = array(

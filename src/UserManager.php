@@ -141,5 +141,21 @@ class UserManager
         return null;
     }
 
+    public function GetUserIDByToken($token)
+    {
+        $qb = $this->db->createQueryBuilder();
+        $qb->select('*')
+            ->from('users')
+            ->where('remote_token = :id AND active = 1')
+            ->setParameter('id', $token);
+        $result = $qb->execute();
+        $accdata = $result->fetchAll();
+        if(!empty($accdata))
+        {
+            return $accdata[0]['id'];
+        }
+        return null;
+    }
+
 
 }

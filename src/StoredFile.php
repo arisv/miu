@@ -109,8 +109,9 @@ namespace Meow
                 ->setParameter(5, $this->internalMimetype)
                 ->setParameter(6, $this->originalSize)
                 ->setParameter(7, $this->date);
+
             $result = $queryBuilder->execute();
-            return true; //TODO: error checking, assume everything is always fine for now
+            return $db->lastInsertId(); //TODO: error checking, assume everything is always fine for now
         }
 
         public function GetCustomUrl()
@@ -118,7 +119,7 @@ namespace Meow
             return 'http://'.$_SERVER['SERVER_NAME'] . '/i/' . $this->customUrl . '.png';
         }
 
-        public static function AddFileToStorage(UploadedFile $file, Connection $db)
+        public static function AddFileToStorage(UploadedFile $file, Connection $db, \Meow\UserManager $userManager, $remoteToken = null)
         {
             $rowData = array();
             $rowData['original_name'] = $file->getClientOriginalName(); //Original filename supplied by client
@@ -142,8 +143,39 @@ namespace Meow
 
             if($fileToStore->MoveToStorage($file))
             {
-                $fileToStore->SaveToDB($db);
-                return $fileToStore;
+                $fileId = $fileToStore->SaveToDB($db);
+                dump('File id: '.$fileId);
+                if($remoteToken) //upload by token
+                {
+                    $userId = $userManager->GetUserIDByToken($remoteToken);
+                    dump('Associating file by token '. $remoteToken.' with id ' . $userId);
+                    $queryBuilder = $db->createQueryBuilder();
+                    $queryBuilder->insert('uploadlog')
+                        ->setValue('image_id', '?')
+                        ->setValue('user_id', '?')
+                        ->setParameter(0, $fileId)
+                        ->setParameter(1, $userId);
+                    $queryBuilder->execute();
+                    return $fileToStore;
+                }
+                else if($userManager->HasLoggedUser()) //upload by web form
+                {
+                    $userId = $userManager->GetCurrentUserID();
+                    dump('Associating file by login with id ' . $userId);
+                    $queryBuilder = $db->createQueryBuilder();
+                    $queryBuilder->insert('uploadlog')
+                        ->setValue('image_id', '?')
+                        ->setValue('user_id', '?')
+                        ->setParameter(0, $fileId)
+                        ->setParameter(1, $userId);
+                    $queryBuilder->execute();
+                    return $fileToStore;
+                }
+                else
+                {
+                    dump('Uploading anonymous file');
+                    return $fileToStore; //anonymous upload
+                }
             }
             else
                 return null;
