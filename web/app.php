@@ -46,13 +46,17 @@ $app->before(function () use ($app, $miu_config) {
     $ums = new \Meow\UserManager($app, $miu_config);
     $app['usermanager.service'] = $ums;
     $app['usermanager.service.loggedUser'] = null;
+    $app['isUserAdmin'] = false;
 
     if($ums->HasLoggedUser())
     {
         $currentUser = $ums->GetCurrentUserData();
+        dump($currentUser);
         $app['usermanager.service.loggedUser'] = $currentUser;
         $app['twig']->addGlobal('userLogged', true);
         $app['twig']->addGlobal('userName', $currentUser->GetName());
+        if($currentUser->GetRole() == 2)
+            $app['isUserAdmin'] = true;
     }
     else
         $app['twig']->addGlobal('userLogged', false);
@@ -190,7 +194,36 @@ $app->get('/manage/', function () use ($app){
     if(!$userManager->HasLoggedUser())
         return $app->redirect('/login/');
 
-    return $app['usermanager.service.loggedUser']->GetRemoteToken();
+    return $app['twig']->render('manage_layout.twig', array('page' => 'home'));
+
+});
+
+$app->get('/manage/mytoken/', function () use ($app){
+    /** @var \Meow\UserManager $userManager */
+    $userManager = $app['usermanager.service'];
+
+    if(!$userManager->HasLoggedUser())
+        return $app->redirect('/login/');
+
+    $token = $app['usermanager.service.loggedUser']->GetRemoteToken();
+    return $app['twig']->render('manage_displaytoken.twig', array(
+        'page' => 'token',
+        'myToken' => $token));
+
+});
+
+$app->get('/manage/admin/', function () use ($app){
+    /** @var \Meow\UserManager $userManager */
+    $userManager = $app['usermanager.service'];
+
+    if(!$userManager->HasLoggedUser())
+        return $app->redirect('/login/');
+
+    if($app['usermanager.service.loggedUser']->GetRole() != 2)
+        return $app->redirect('/manage/');
+
+    return $app['twig']->render('manage_displayallpics.twig', array(
+        'page' => 'allpics'));
 
 });
 

@@ -34,4 +34,9 @@ class User
     {
         return $this->remoteToken;
     }
+
+    public function GetRole()
+    {
+        return $this->role;
+    }
 }
