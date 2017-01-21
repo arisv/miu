@@ -30,8 +30,8 @@ namespace Meow
             $this->customUrl = $rowData['custom_url'];
             $this->serviceUrl = $rowData['service_url'];
             $this->originalExtension = $rowData['original_extension'];
-            $this->internalMimetype = $rowData['original_mimetype'];
-            $this->originalSize = $rowData['original_size'];
+            $this->internalMimetype = $rowData['internal_mimetype'];
+            $this->originalSize = $rowData['internal_size'];
             $this->date = $rowData['date'];
             if(isset($rowData['visibility_status']))
                 $this->visibilityStatus = $rowData['visibility_status'];
@@ -124,9 +124,9 @@ namespace Meow
             $rowData = array();
             $rowData['original_name'] = $file->getClientOriginalName(); //Original filename supplied by client
             $sha = sha1_file($file->getPathName()); //filename to be used internally
-            $rowData['original_size'] = $file->getSize(); //filesize
+            $rowData['internal_size'] = $file->getSize(); //filesize
             $rowData['original_extension'] = $file->guessExtension(); //detect extension from mimetype to append
-            $rowData['original_mimetype'] = $file->getMimeType(); //store mimetipe for grouping and shit
+            $rowData['internal_mimetype'] = $file->getMimeType(); //store mimetipe for grouping and shit
             $rowData['date'] = time();
             $rowData['internal_name'] = $sha .'_'. $rowData['date'];
 
@@ -179,6 +179,34 @@ namespace Meow
             }
             else
                 return null;
+        }
+
+        public static function GetAllFiles(Connection $db, $offset, $limit)
+        {
+            $result = array('data' => array(), 'total' => 0);
+            $limit = (intval($limit) > 0) ? intval($limit) : 25;
+            $offset = (intval($offset) >= 0) ? $offset : 0;
+
+            $sql = 'SELECT SQL_CALC_FOUND_ROWS * FROM filestorage ORDER BY id DESC LIMIT ' . $limit . ' OFFSET ' . $offset;
+            $totalsql = 'SELECT FOUND_ROWS()';
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+            $collectedFiles = $stmt->fetchAll();
+
+            $stmt = $db->prepare($totalsql);
+            $stmt->execute();
+            $totalFiles = $stmt->fetchAll();
+
+            foreach ($collectedFiles as $rawFile)
+            {
+                $result['data'][] = new StoredFile($rawFile);
+            }
+
+            $result['total'] = $totalFiles[0]["FOUND_ROWS()"];
+
+            return $result;
+
+
         }
 
     }

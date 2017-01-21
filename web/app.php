@@ -212,7 +212,7 @@ $app->get('/manage/mytoken/', function () use ($app){
 
 });
 
-$app->get('/manage/admin/', function () use ($app){
+$app->get('/manage/admin/{pageNum}', function ($pageNum) use ($app){
     /** @var \Meow\UserManager $userManager */
     $userManager = $app['usermanager.service'];
 
@@ -222,10 +222,22 @@ $app->get('/manage/admin/', function () use ($app){
     if($app['usermanager.service.loggedUser']->GetRole() != 2)
         return $app->redirect('/manage/');
 
-    return $app['twig']->render('manage_displayallpics.twig', array(
-        'page' => 'allpics'));
+    $pageLimit = 25;
 
-});
+    $controlPanel = new \Meow\ControlPanel($app);
+    $listOfImages = $controlPanel->GetAllImages($pageNum, $pageLimit);
+
+    dump($listOfImages);
+
+    $pageStructure = $controlPanel->GetPageStructure($pageNum, $pageLimit, $listOfImages['total']);
+    dump('totalpages:'. $pageStructure);
+
+    return $app['twig']->render('manage_displayallpics.twig', array(
+        'page' => 'allpics',
+        'imagelist' => $listOfImages['data']));
+
+})->value('pageNum', '1')
+->assert('pageNum', '\d+');
 
 $app->post('/test/', function (Request $request) {
     dump($request->request->get('private_key'));

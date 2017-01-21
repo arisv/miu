@@ -40,3 +40,7 @@
 #managebuttons{
     padding: 20px;
 }
+
+.displayimage img {
+    width: 250px;
+}
