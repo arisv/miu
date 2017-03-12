@@ -6,7 +6,7 @@
 
 {% block maincontent %}
     <div class="row">
-        <div class="col-xs-offset-4 col-xs-8" id="managebuttons">
+        <div class="col-md-offset-4 col-xs-8" id="managebuttons">
             <a class="btn {{ page == 'token' ? 'btn-info' : 'btn-default' }}" href="/manage/mytoken" role="button">Remote token</a>
             <a class="btn {{ page == 'mypics' ? 'btn-info' : 'btn-default' }}" href="/manage/mypics" role="button">View my pictures</a>
             {% if app.isUserAdmin == true %}
@@ -16,4 +16,4 @@
     </div>
     {% block managecontent %}
     {% endblock %}
-{% endblock %}
+{% endblock %}g
