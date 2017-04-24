@@ -212,6 +212,19 @@ $app->get('/manage/mytoken/', function () use ($app){
 
 });
 
+$app->get('/manage/mypics/', function () use ($app){
+    /** @var \Meow\UserManager $userManager */
+    $userManager = $app['usermanager.service'];
+
+    if(!$userManager->HasLoggedUser())
+        return $app->redirect('/login/');
+
+    $token = $app['usermanager.service.loggedUser']->GetRemoteToken();
+    return $app['twig']->render('manage_mypics.twig', array(
+        'page' => 'mypics',
+        ));
+});
+
 $app->get('/manage/admin/{pageNum}', function ($pageNum) use ($app){
     /** @var \Meow\UserManager $userManager */
     $userManager = $app['usermanager.service'];

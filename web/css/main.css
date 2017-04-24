@@ -25,6 +25,11 @@
 #loginpanel{
     margin-top: 10px;
     padding-left: 40px;
+    margin-right: 10%;
+}
+
+#userheader{
+    margin-right: 10%;
 }
 
 .header{
