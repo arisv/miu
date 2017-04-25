@@ -286,7 +286,7 @@ $app->error(function(\Exception $e) use($app) {
         return $app['twig']->render('error_404.twig');
     }
     else
-        return "Something went wrongu";
+        return $app['twig']->render('error_general.twig');
 });
 
 $app->run();

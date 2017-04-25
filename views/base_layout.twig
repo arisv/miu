@@ -16,6 +16,7 @@
 </head>
 <body>
 <div class="header">
+    {% if userLogged is defined %}
     {% if not userLogged %}
         <div id="loginpanel" class="pull-right">
             <a href="/login/">Login</a> or <a href="/signup/">Sign up</a>
@@ -27,6 +28,7 @@
             Welcome, {{ userName }}. (Not you? <a href="/logout/">Logout</a> )<br>
             <a href="/manage/">Control Panel</a>
         </div>
+    {% endif %}
     {% endif %}
 </div>
 <div class="container">
