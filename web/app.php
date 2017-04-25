@@ -212,16 +212,20 @@ $app->get('/manage/mytoken/', function () use ($app){
 
 });
 
-$app->get('/manage/mypics/', function () use ($app){
+$app->get('/manage/mypics/', function (Request $request) use ($app){
     /** @var \Meow\UserManager $userManager */
     $userManager = $app['usermanager.service'];
 
     if(!$userManager->HasLoggedUser())
         return $app->redirect('/login/');
 
-    $token = $app['usermanager.service.loggedUser']->GetRemoteToken();
+    $controlPanel = new \Meow\ControlPanel($app);
+    $listOfImages = $controlPanel->GetCurrentUserImages($request, $userManager->GetCurrentUserID());
+    dump($listOfImages);
+
     return $app['twig']->render('manage_mypics.twig', array(
         'page' => 'mypics',
+        'data' => $listOfImages,
         ));
 });
 
@@ -257,56 +261,21 @@ $app->post('/test/', function (Request $request) {
     return "Key: ".$request->request->get('private_key');
 });
 
-/*
- * Run first time to deploy the database
- * */
-$app->get('/deploydb/', function () use ($app, $miu_config) {
+
+$app->get('/updatedb/', function () use ($app, $miu_config) {
     $db = $app['db'];
-    $tableName = 'filestorage';
-    $result = $db->query('SHOW TABLES LIKE "'.$tableName.'"');
-    if($result->rowCount() == 0)
-    {
-        $query = 'CREATE TABLE '.$tableName.'(
-            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-            original_name varchar(255) NOT NULL,
-            internal_name varchar(255) NOT NULL,
-            custom_url varchar(255) NULL,
-            service_url varchar(255) NULL,
-            original_extension varchar(255) NULL,
-            internal_mimetype varchar(255) NULL,
-            internal_size INT UNSIGNED NOT NULL,
-            date INT UNSIGNED NOT NULL,
-            visibility_status INT NOT NULL DEFAULT 1,
-            PRIMARY KEY(id));';
-        $result = $db->query($query);
-    }
 
-    $tableName = 'users';
-    $result = $db->query('SHOW TABLES LIKE "'.$tableName.'"');
-    if($result->rowCount() == 0)
-    {
-        $query = 'CREATE TABLE '.$tableName.'(
-            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-            login TEXT NOT NULL,
-            email varchar(255) NOT NULL,
-            password TEXT NOT NULL,
-            remote_token varchar(255) NULL,
-            role INT NOT NULL DEFAULT 1,
-            active INT NOT NULL DEFAULT 1,
-            PRIMARY KEY(id));';
-        $result = $db->query($query);
-    }
+    $query = 'ALTER TABLE uploadlog ADD upload_id INT unsigned PRIMARY KEY AUTO_INCREMENT FIRST;';
+    $result = $db->query($query);
 
-    $tableName = 'uploadlog';
-    $result = $db->query('SHOW TABLES LIKE "'.$tableName.'"');
-    if($result->rowCount() == 0)
-    {
-        $query = 'CREATE TABLE '.$tableName.'(
-            image_id INT UNSIGNED NOT NULL,
-            user_id INT UNSIGNED NOT NULL
-            );';
-        $result = $db->query($query);
-    }
+    $query = 'ALTER TABLE uploadlog ADD INDEX upload_index (`upload_id`)';
+    $result = $db->query($query);
+
+    $query = 'ALTER TABLE filestorage ADD INDEX filestorage_index (`id`)';
+    $result = $db->query($query);
+
+    $query = 'ALTER TABLE uploadlog ADD INDEX filestorage_user_index (`user_id`)';
+    $result = $db->query($query);
 
     return "Script finished";
 });

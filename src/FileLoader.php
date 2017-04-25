@@ -11,7 +11,6 @@ namespace Meow
     {
         public function AddNewFile(Request $request, Application $app)
         {
-            dump('test');
             if ($request->files->has('meowfile')) {
                 /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
                 $file = $request->files->get('meowfile');

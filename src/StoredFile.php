@@ -181,6 +181,21 @@ namespace Meow
                 return null;
         }
 
+        public function getOriginalName()
+        {
+            return $this->originalName;
+        }
+
+        public function getDate()
+        {
+            return $this->date;
+        }
+
+        public function getVisibilityStatus()
+        {
+            return $this->visibilityStatus;
+        }
+
         public static function GetAllFiles(Connection $db, $offset, $limit)
         {
             $result = array('data' => array(), 'total' => 0);
@@ -208,6 +223,66 @@ namespace Meow
 
 
         }
+
+        public static function GetUserFiles(Connection $db, $userId, $afterOffset = null, $beforeOffset = null, $limit)
+        {
+            $sql = "SELECT * FROM uploadlog
+JOIN filestorage ON uploadlog.image_id = filestorage.id AND uploadlog.user_id = :user
+";
+            if($afterOffset > 0)
+                $sql .= "WHERE uploadlog.upload_id < :offset ";
+            else if($beforeOffset > 0)
+                $sql .= "WHERE uploadlog.upload_id > :offset ";
+            $sql .= "ORDER BY uploadlog.upload_id DESC
+LIMIT :limit";
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue("user", $userId);
+            if($afterOffset > 0)
+                $stmt->bindValue("offset", $afterOffset, \PDO::PARAM_INT);
+            else if($beforeOffset > 0)
+                $stmt->bindValue("offset", $beforeOffset, \PDO::PARAM_INT);
+            $stmt->bindValue('limit', $limit + 1, \PDO::PARAM_INT);
+            $stmt->execute();
+            $totalFiles = $stmt->fetchAll();
+
+            dump($totalFiles);
+
+            $resultIterator = 0;
+            $result = array();
+            $result['status'] = true;
+
+            if(empty($totalFiles)) //no files found, return like this
+            {
+                $results['status'] = false;
+                return $results;
+            }
+
+            if(count($totalFiles) > $limit)
+                $result['hasNextPage'] = true;
+            else
+                $result['hasNextPage'] = false;
+
+            if($afterOffset > 0)
+                $result['prev'] = 'after';
+            else if($beforeOffset > 0)
+                $result['prev'] = 'before';
+            else
+                $result['prev'] = 'home';
+
+
+            foreach($totalFiles as $rawFile)
+            {
+                if($resultIterator < $limit)
+                    $result['files'][] = new StoredFile($rawFile);
+                $resultIterator++;
+            }
+
+            $result['beforeId'] = $totalFiles[0]['upload_id'];
+            $result['afterId'] = $totalFiles[(count($result['files']) - 1)]['upload_id'];
+
+            return $result;
+        }
+
 
     }
 }
