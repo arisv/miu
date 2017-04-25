@@ -96,3 +96,7 @@ body {
     position: relative;
     display: block;
 }
+
+.error-image{
+    max-width: 90%;
+}

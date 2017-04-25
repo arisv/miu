@@ -280,10 +280,10 @@ $app->get('/updatedb/', function () use ($app, $miu_config) {
     return "Script finished";
 });
 
-$app->error(function(\Exception $e) {
+$app->error(function(\Exception $e) use($app) {
     if($e->getMessage() == '404')
     {
-        return 'File not found ;_;';
+        return $app['twig']->render('error_404.twig');
     }
     else
         return "Something went wrongu";
