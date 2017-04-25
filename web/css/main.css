@@ -50,6 +50,11 @@ body {
     padding: 20px;
 }
 
+#navpanel{
+    padding: 20px;
+    background-color: white;
+}
+
 .displayimage img {
     width: 250px;
 }

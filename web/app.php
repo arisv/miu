@@ -227,7 +227,7 @@ $app->get('/manage/mypics/', function (Request $request) use ($app){
         'page' => 'mypics',
         'data' => $listOfImages,
         ));
-});
+})->bind('manage_mypics');
 
 $app->get('/manage/admin/{pageNum}', function ($pageNum) use ($app){
     /** @var \Meow\UserManager $userManager */

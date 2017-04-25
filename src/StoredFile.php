@@ -234,8 +234,22 @@ JOIN filestorage ON uploadlog.image_id = filestorage.id AND uploadlog.user_id = 
                 $sql .= "WHERE uploadlog.upload_id < :offset ";
             else if($beforeOffset > 0)
                 $sql .= "WHERE uploadlog.upload_id > :offset ";
-            $sql .= "ORDER BY uploadlog.upload_id DESC
+
+            $shouldReverse = false;
+            if($beforeOffset > 0)
+            {
+                $sql .= "ORDER BY uploadlog.upload_id ASC
 LIMIT :limit";
+                $shouldReverse = true;
+            }
+
+            else
+                $sql .= "ORDER BY uploadlog.upload_id DESC
+LIMIT :limit";
+
+
+
+
             $stmt = $db->prepare($sql);
             $stmt->bindValue("user", $userId);
             if($afterOffset > 0)
@@ -278,8 +292,17 @@ LIMIT :limit";
                 $resultIterator++;
             }
 
-            $result['beforeId'] = $totalFiles[0]['upload_id'];
-            $result['afterId'] = $totalFiles[(count($result['files']) - 1)]['upload_id'];
+            if($shouldReverse) //before returns files in inverse order
+            {
+                $result['files'] = array_reverse($result['files']);
+                $result['beforeId'] = $totalFiles[(count($result['files']) - 1)]['upload_id'];
+                $result['afterId'] = $totalFiles[0]['upload_id'];
+            }
+            else
+            {
+                $result['beforeId'] = $totalFiles[0]['upload_id'];
+                $result['afterId'] = $totalFiles[(count($result['files']) - 1)]['upload_id'];
+            }
 
             return $result;
         }
