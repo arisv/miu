@@ -280,4 +280,13 @@ $app->get('/updatedb/', function () use ($app, $miu_config) {
     return "Script finished";
 });
 
+$app->error(function(\Exception $e) {
+    if($e->getMessage() == '404')
+    {
+        return 'File not found ;_;';
+    }
+    else
+        return "Something went wrongu";
+});
+
 $app->run();

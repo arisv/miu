@@ -3,6 +3,7 @@
 namespace Meow
 {
     use \Silex\Application;
+    use Symfony\Component\Config\Definition\Exception\Exception;
     use \Symfony\Component\HttpFoundation\Request;
     use \Symfony\Component\HttpFoundation\File;
 
@@ -50,7 +51,8 @@ namespace Meow
                 ob_end_clean();
                 return $app->sendFile($result->GetFilePath());
             }
-            return "Not found";
+            else
+                throw new Exception('404');
         }
 
         public function ServeFileGeneric(Request $request, Application $app, $customUrl)

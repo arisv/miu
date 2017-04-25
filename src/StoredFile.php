@@ -65,9 +65,10 @@ namespace Meow
             $rows = $result->fetchAll();
             if(!empty($rows)) //we have an image, yay!
             {
-                $result = new StoredFile($rows[0]);
+                return new StoredFile($rows[0]);
             }
-            return $result;
+            else
+                return null;
         }
 
         public function MoveToStorage(UploadedFile $file)
