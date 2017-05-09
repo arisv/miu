@@ -5,6 +5,7 @@ namespace Meow
     use \Silex\Application;
     use Symfony\Component\Config\Definition\Exception\Exception;
     use \Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\ResponseHeaderBag;
     use \Symfony\Component\HttpFoundation\File;
 
 
@@ -39,17 +40,23 @@ namespace Meow
                     }
                 }
             }
-            dump($request);
             return "Wtf";
         }
 
-        public function ServeFileDirect(Request $request, Application $app, $customUrl)
+        public function ServeFileDirect(Request $request, Application $app, $customUrl, $fileExtension)
         {
             if($result = StoredFile::LookupFile($app['db'], $customUrl, 'direct'))
             {
                 dump('Serving: ' . $result->GetFilePath());
                 ob_end_clean();
-                return $app->sendFile($result->GetFilePath());
+                if($result->IsImage())
+                    return $app->sendFile($result->GetFilePath(), 200, array('Content-type: '.$result->GetMIME()));
+                else
+                {
+                    return $app->sendFile($result->GetFilePath(), 200, array('Content-type: '.$result->GetMIME()))
+                        ->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $result->GetOriginalName());
+                }
+
             }
             else
                 throw new Exception('404');

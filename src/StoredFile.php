@@ -53,14 +53,13 @@ namespace Meow
         public static function LookupFile(Connection $db, $fileid, $type)
         {
             $result = null;
-            $routes = array(
-                'direct' => 'custom_url'
-            );
             $qb = $db->createQueryBuilder();
             $qb->select('*')
-                ->from('filestorage')
-                ->where($routes[$type] . ' = ?' )
-                ->setParameter(0, $fileid);
+                ->from('filestorage');
+            if($type == 'direct'){
+                $qb->where('custom_url = ?' );
+                $qb->setParameter(0, $fileid);
+            }
             $result = $qb->execute();
             $rows = $result->fetchAll();
             if(!empty($rows)) //we have an image, yay!
@@ -117,7 +116,20 @@ namespace Meow
 
         public function GetCustomUrl()
         {
-            return 'http://'.$_SERVER['SERVER_NAME'] . '/i/' . $this->customUrl . '.png';
+            return 'http://'.$_SERVER['SERVER_NAME'] . '/i/' . $this->customUrl . '.' . $this->originalExtension;
+        }
+
+        public function GetMIME()
+        {
+            return $this->internalMimetype;
+        }
+
+        public function IsImage()
+        {
+            if(strpos($this->internalMimetype, 'image') === 0)
+                return true;
+            else
+                return false;
         }
 
         public static function AddFileToStorage(UploadedFile $file, Connection $db, \Meow\UserManager $userManager, $remoteToken = null)
@@ -182,7 +194,7 @@ namespace Meow
                 return null;
         }
 
-        public function getOriginalName()
+        public function GetOriginalName()
         {
             return $this->originalName;
         }

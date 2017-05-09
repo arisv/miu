@@ -65,7 +65,7 @@ $app->before(function () use ($app, $miu_config) {
 
 });
 //serve direct link to images
-$app->get('/i/{customUrl}.png', 'Meow\\FileLoader::ServeFileDirect');
+$app->get('/i/{customUrl}.{fileExtension}', 'Meow\\FileLoader::ServeFileDirect');
 
 //serve generic file page (with links)
 $app->get('/i/{customUrl}/', 'Meow\\FileLoader::ServeFile')
