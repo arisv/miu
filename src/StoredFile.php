@@ -124,12 +124,35 @@ namespace Meow
             return $this->internalMimetype;
         }
 
+        //determine whether browser should embed file in the page or serve it as attachment (e.g archives)
+        public function ShouldEmbed()
+        {
+            return $this->IsType(array('image', 'audio', 'video/webm'));
+        }
+
         public function IsImage()
         {
-            if(strpos($this->internalMimetype, 'image') === 0)
-                return true;
-            else
-                return false;
+            return $this->IsType('image');
+        }
+
+        public function IsAudio()
+        {
+            return $this->IsType('audio');
+        }
+
+        public function IsVideo()
+        {
+            return $this->IsType('video/webm');
+        }
+
+        private function IsType($types)
+        {
+            foreach($types as $type)
+            {
+                if(strpos($this->internalMimetype, $type) === 0)
+                    return true;
+            }
+            return false;
         }
 
         public static function AddFileToStorage(UploadedFile $file, Connection $db, \Meow\UserManager $userManager, $remoteToken = null)

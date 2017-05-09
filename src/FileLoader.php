@@ -49,7 +49,7 @@ namespace Meow
             {
                 dump('Serving: ' . $result->GetFilePath());
                 ob_end_clean();
-                if($result->IsImage())
+                if($result->ShouldEmbed())
                     return $app->sendFile($result->GetFilePath(), 200, array('Content-type: '.$result->GetMIME()));
                 else
                 {
