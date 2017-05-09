@@ -97,6 +97,12 @@ body {
     display: block;
 }
 
+.itembox-controls{
+    margin-left: 20px;
+    font-weight: 600;
+    font-size: 40px;
+}
+
 .error-image{
     max-width: 90%;
 }

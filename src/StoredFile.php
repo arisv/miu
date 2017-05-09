@@ -132,17 +132,17 @@ namespace Meow
 
         public function IsImage()
         {
-            return $this->IsType('image');
+            return $this->IsType(array('image'));
         }
 
         public function IsAudio()
         {
-            return $this->IsType('audio');
+            return $this->IsType(array('audio'));
         }
 
         public function IsVideo()
         {
-            return $this->IsType('video/webm');
+            return $this->IsType(array('video/webm'));
         }
 
         private function IsType($types)

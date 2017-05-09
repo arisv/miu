@@ -36,16 +36,27 @@
                                 <div class="itembox">
                                     <div class="itembox-img-container">
                                         <div class="itembox-img-container-in">
+                                            {% if item.IsImage == true %}
                                             <img src="{{ item.getcustomurl }}">
+                                            {% elseif item.IsVideo == true %}
+                                            <img src="/static/webm_file.png">
+                                            {% elseif item.IsAudio == true %}
+                                            <img src="/static/audio_file.png">
+                                            {% else %}
+                                            <img src="/static/generic_file.png">
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="itembox-text">
-                                <span>
-                                    {{ item.getOriginalName }}
-                                </span>
                                         <span>
-                                    {{ item.getDate|date("d/m/Y h:i:s") }}
-                                </span>
+                                            {{ item.getOriginalName }}
+                                        </span>
+                                        <span>
+                                            {{ item.getDate|date("d/m/Y h:i:s") }}
+                                        </span>
+                                    </div>
+                                    <div class="itembox-controls">
+                                        <a href="{{ item.getcustomurl }}"><i class="ion ion-android-download"></i></a>
                                     </div>
                                 </div>
                             </div>
