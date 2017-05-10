@@ -295,8 +295,6 @@ LIMIT :limit";
             $stmt->execute();
             $totalFiles = $stmt->fetchAll();
 
-            dump($totalFiles);
-
             $resultIterator = 0;
             $result = array();
             $result['status'] = true;

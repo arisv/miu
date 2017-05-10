@@ -229,7 +229,7 @@ $app->get('/manage/mypics/', function (Request $request) use ($app){
         ));
 })->bind('manage_mypics');
 
-$app->get('/manage/admin/{pageNum}', function ($pageNum) use ($app){
+$app->get('/manage/admin/users/', function (Request $request) use ($app){
     /** @var \Meow\UserManager $userManager */
     $userManager = $app['usermanager.service'];
 
@@ -239,45 +239,43 @@ $app->get('/manage/admin/{pageNum}', function ($pageNum) use ($app){
     if($app['usermanager.service.loggedUser']->GetRole() != 2)
         return $app->redirect('/manage/');
 
-    $pageLimit = 25;
-
     $controlPanel = new \Meow\ControlPanel($app);
-    $listOfImages = $controlPanel->GetAllImages($pageNum, $pageLimit);
+    $userData = $controlPanel->GetAllUserIndex($request);
 
-    dump($listOfImages);
-
-    $pageStructure = $controlPanel->GetPageStructure($pageNum, $pageLimit, $listOfImages['total']);
-    dump('totalpages:'. $pageStructure);
-
-    return $app['twig']->render('manage_displayallpics.twig', array(
+    dump($userData);
+    return $app['twig']->render('admin_users.twig', array(
         'page' => 'allpics',
-        'imagelist' => $listOfImages['data']));
+        'userlist' => $userData));
 
-})->value('pageNum', '1')
-->assert('pageNum', '\d+');
-
-$app->post('/test/', function (Request $request) {
-    dump($request->request->get('private_key'));
-    return "Key: ".$request->request->get('private_key');
 });
 
+$app->get('/endpoint/getstoragestats/', function(Request $request) use ($app){
+    /** @var \Meow\UserManager $userManager */
+    $userManager = $app['usermanager.service'];
 
-$app->get('/updatedb/', function () use ($app, $miu_config) {
-    $db = $app['db'];
+    $response = array(
+        'status' => 'ok',
+        'message' => ''
+        );
 
-    $query = 'ALTER TABLE uploadlog ADD upload_id INT unsigned PRIMARY KEY AUTO_INCREMENT FIRST;';
-    $result = $db->query($query);
+    if(!$userManager->HasLoggedUser())
+    {
+        $response['status'] = 'error';
+        $response['message'] = 'Please log in';
+    }
+    else if($app['usermanager.service.loggedUser']->GetRole() != 2)
+    {
+        $response['status'] = 'error';
+        $response['message'] = 'Insufficient privileges';
+    }
+    else
+    {
+        $controlPanel = new \Meow\ControlPanel($app);
+        $response['message'] = $controlPanel->GetStorageStats($request);
+    }
+    return $app->json($response);
 
-    $query = 'ALTER TABLE uploadlog ADD INDEX upload_index (`upload_id`)';
-    $result = $db->query($query);
 
-    $query = 'ALTER TABLE filestorage ADD INDEX filestorage_index (`id`)';
-    $result = $db->query($query);
-
-    $query = 'ALTER TABLE uploadlog ADD INDEX filestorage_user_index (`user_id`)';
-    $result = $db->query($query);
-
-    return "Script finished";
 });
 
 $app->error(function(\Exception $e) use($app) {
