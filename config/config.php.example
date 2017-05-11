@@ -4,4 +4,7 @@ $miu_config['db_host'] = '127.0.0.1';
 $miu_config['db_dbase'] = 'miubase';
 $miu_config['db_username'] = 'replacewithaname';
 $miu_config['db_password'] = 'replacewithapassword';
-$miu_config['admin_email'] = 'example@test.com'
+//used to create the initial administrator during deploy, has to be specified BEFORE creating an account
+$miu_config['admin_email'] = 'example@test.com';
+//token used when calling garbage collection endpoint by external means
+$miu_config['worker_token'] = 'changeme';

@@ -131,6 +131,34 @@ GROUP BY uploadlog.user_id";
         return $response;
     }
 
+    public function RemoveAllDeletables()
+    {
+        $messages = [];
+        $deletables = $this->ListDeletableFiles();
+        $messages['listToDelete'] = [];
+        if(!empty($deletables))
+        {
+            $messages['listToDelete'] = $deletables;
+            $deletedFiles = [];
+            foreach($deletables as $fileToDelete)
+            {
+                //if file was successfully removed from filestorage table and disk, store the id
+                //to clean up uploadlog if necessary
+                if(StoredFile::DeleteFile($this->db, $fileToDelete))
+                    $deletedFiles[] = $fileToDelete;
+            }
+            $messages['deletedFiles'] = $deletedFiles;
+            $qb = $this->db->createQueryBuilder();
+            $qb->delete('uploadlog')
+                ->where('image_id IN (:deletedFiles)')
+                ->setParameter('deletedFiles', implode(',',$deletedFiles));
+            $messages['deletedTransaction'] = $qb->execute();
+
+        }
+
+        return $messages;
+    }
+
 
     public function GetPageStructure($currentPage, $numPerPage, $totalItems)
     {
@@ -147,6 +175,23 @@ GROUP BY uploadlog.user_id";
             $i++;
         }
         return round($size, $pres) . ' ' . $names[$i];
+    }
+
+    private function ListDeletableFiles()
+    {
+        $deletables = [];
+        $qb = $this->db->createQueryBuilder();
+        //fetch all files marked for deletion and get their ids
+        $qb->select('id')
+            ->from('filestorage')
+            ->where('visibility_status = 2');
+
+        $qr = $qb->execute()->fetchAll();
+        foreach($qr as $queryResult)
+        {
+            $deletables[] = $queryResult['id'];
+        }
+        return $deletables;
     }
 
     private function GetUserDateReport($userId)

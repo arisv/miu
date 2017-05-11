@@ -300,13 +300,23 @@ $app->post('/endpoint/setdeletestatus/', function(Request $request) use ($app){
     return $app->json($response);
 });
 
-$app->error(function(\Exception $e) use($app) {
+$app->get('/endpoint/endlesstrash/', function(Request $request) use ($app, $miu_config){
+    if($request->query->get('token') !== $miu_config['worker_token'])
+        die('Nope.');
+
+    $controlPanel = new \Meow\ControlPanel($app);
+    $response = $controlPanel->RemoveAllDeletables();
+
+    return $app->json($response);
+});
+
+/*$app->error(function(\Exception $e) use($app) {
     if($e->getMessage() == '404')
     {
         return $app['twig']->render('error_404.twig');
     }
     else
         return $app['twig']->render('error_general.twig');
-});
+});*/
 
 $app->run();

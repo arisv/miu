@@ -3,8 +3,11 @@
 namespace Meow
 {
     use \Doctrine\DBAL\Connection;
+    use Symfony\Component\HttpFoundation\File\File;
     use \Symfony\Component\HttpFoundation\File\UploadedFile;
     use \Symfony\Component\HttpFoundation\File\Exception;
+    use \Symfony\Component\Filesystem\Filesystem;
+    use \Symfony\Component\Filesystem\Exception\IOException;
 
     class StoredFile
     {
@@ -242,6 +245,15 @@ namespace Meow
             return ($this->visibilityStatus == 2);
         }
 
+
+        /**
+         * Toggles file as marked for deletion but does not delete anything on itself*
+         *
+         * @param Connection $db
+         * @param $fileId
+         * @param $action
+         * @return \Doctrine\DBAL\Driver\Statement|int
+         */
         public static function SetDeleteStatus(Connection $db, $fileId, $action)
         {
             $qb = $db->createQueryBuilder();
@@ -254,6 +266,40 @@ namespace Meow
             $qb->where('filestorage.id = :fileid')
                 ->setParameter('fileid', $fileId);
             return $qb->execute();
+        }
+
+        //removes file from disk and removes record in filestorage if disk removal did not fail
+        public static function DeleteFile(Connection $db, $fileId)
+        {
+            $qb = $db->createQueryBuilder();
+            $qb->select('internal_name, date')
+                ->from('filestorage')
+                ->where('id = :fileid')
+                ->setParameter('fileid', $fileId);
+            $query = $qb->execute()->fetchAll();
+            if(empty($query))
+                return false;
+            $dt = new \DateTime();
+            $dt->setTimestamp($query[0]['date']);
+            $storagePath = __DIR__.'/../storage/'. $dt->format('Y-m'). '/';
+            $fileName = $storagePath . $query[0]['internal_name'];
+            $fs = new Filesystem();
+            try
+            {
+                $fs->remove($fileName);
+            }
+            catch(IOException $e)
+            {
+                echo $e->getMessage(). ' ' . $e->getPath();
+                return false;
+            }
+
+            $qb->delete('filestorage')
+                ->where('id = :fileid')
+                ->setParameter('fileid', $fileId);
+            $qb->execute();
+            return true;
+
         }
 
         public static function GetAllFiles(Connection $db, $offset, $limit)
