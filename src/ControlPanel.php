@@ -61,9 +61,8 @@ class ControlPanel
 
     }
 
-    public function GetStorageStats(Request $request)
+    public function GetStorageStats($userId)
     {
-        $userId = $request->query->getInt('id');
 
         if($userId > 0)
         {
@@ -75,8 +74,6 @@ GROUP BY uploadlog.user_id";
             $stmt->bindValue('user', $userId);
             $stmt->execute();
             $result = $stmt->fetchAll();
-
-
         }
         if($userId == 0)
         {
@@ -98,6 +95,40 @@ GROUP BY uploadlog.user_id";
             $sizeReport = 'No storage data found.';
 
         return $sizeReport;
+    }
+
+    public function SetDeleteStatus($uploadid, $userid, $action)
+    {
+        $response = array(
+            'status' => 'ok',
+            'message' => ''
+        );
+
+        $qb = $this->db->createQueryBuilder();
+        $qb->select('*')
+            ->from('uploadlog')
+            ->where('uploadlog.user_id = :user')
+            ->andWhere('uploadlog.image_id = :uploadid')
+            ->setParameter('user', $userid)
+            ->setParameter('uploadid', $uploadid);
+
+        $fetch = $qb->execute();
+        $fetch = $fetch->fetchAll();
+
+        if(empty($fetch))
+        {
+            $response['status'] = 'error';
+            $response['message'] = 'Invalid file and/or username';
+        }
+        else
+        {
+            if(!StoredFile::SetDeleteStatus($this->db, $uploadid, $action))
+            {
+                $response['status'] = 'error';
+            }
+        }
+
+        return $response;
     }
 
 

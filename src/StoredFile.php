@@ -124,6 +124,11 @@ namespace Meow
             return $this->internalMimetype;
         }
 
+        public function GetID()
+        {
+            return $this->id;
+        }
+
         //determine whether browser should embed file in the page or serve it as attachment (e.g archives)
         public function ShouldEmbed()
         {
@@ -230,6 +235,25 @@ namespace Meow
         public function getVisibilityStatus()
         {
             return $this->visibilityStatus;
+        }
+
+        public function IsDeleted()
+        {
+            return ($this->visibilityStatus == 2);
+        }
+
+        public static function SetDeleteStatus(Connection $db, $fileId, $action)
+        {
+            $qb = $db->createQueryBuilder();
+
+            $qb->update('filestorage');
+            if($action == 'del')
+                $qb->set('filestorage.visibility_status', 2); //marked for deletion
+            else
+                $qb->set('filestorage.visibility_status', 1); //undo deletion mark
+            $qb->where('filestorage.id = :fileid')
+                ->setParameter('fileid', $fileId);
+            return $qb->execute();
         }
 
         public static function GetAllFiles(Connection $db, $offset, $limit)

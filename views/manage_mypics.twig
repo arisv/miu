@@ -57,6 +57,8 @@
                                     </div>
                                     <div class="itembox-controls">
                                         <a href="{{ item.getcustomurl }}"><i class="ion ion-android-download"></i></a>
+                                        <button data-deleteaction="del" data-deleteid="{{ item.getid }}" data-toggle="tooltip" title="Delete" class="btn btn-danger {% if item.isdeleted == true %}hidden{% endif %}"><i class="buttontext ion ion-trash-a"></i></button>
+                                        <button data-deleteaction="undo"  data-deleteid="{{ item.getid }}" data-toggle="tooltip" title="Undelete" class="btn btn-warning {% if item.isdeleted == false %}hidden{% endif %}"><i class="buttontext ion ion-trash-b"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -69,4 +71,9 @@
             {% endif %}
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="/js/manage_mypics.js"></script>
 {% endblock %}

@@ -271,11 +271,33 @@ $app->get('/endpoint/getstoragestats/', function(Request $request) use ($app){
     else
     {
         $controlPanel = new \Meow\ControlPanel($app);
-        $response['message'] = $controlPanel->GetStorageStats($request);
+        $userId = $request->query->getInt('id');
+        $response['message'] = $controlPanel->GetStorageStats($userId);
     }
     return $app->json($response);
 
 
+});
+
+$app->post('/endpoint/setdeletestatus/', function(Request $request) use ($app){
+    /** @var \Meow\UserManager $userManager */
+    $userManager = $app['usermanager.service'];
+
+    $response = array(
+        'status' => 'ok',
+        'message' => ''
+    );
+    if(!$userManager->HasLoggedUser())
+    {
+        $response['status'] = 'error';
+        $response['message'] = 'Please log in';
+    }
+    else
+    {
+        $controlPanel = new \Meow\ControlPanel($app);
+        $response = $controlPanel->SetDeleteStatus(intval($request->get('id')), $userManager->GetCurrentUserID(), $request->get('action'));
+    }
+    return $app->json($response);
 });
 
 $app->error(function(\Exception $e) use($app) {
