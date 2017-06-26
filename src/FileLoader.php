@@ -20,11 +20,21 @@ namespace Meow
                     dump('Uploading file:');
                     $storedFile = StoredFile::AddFileToStorage($file, $app['db'], $app['usermanager.service']);
                     if($storedFile)
-                        return "Upload Successful :" . $storedFile->GetCustomUrl();
+                    {
+                        return $app['twig']->render('uploadresult.twig',
+                            array('success' => true,
+                                'link' => $storedFile->GetCustomUrl()));
+                    }
                     else
-                        return "Upload Failed";
+                    {
+                        return $app['twig']->render('uploadresult.twig',
+                            array('success' => false,
+                                'text' => 'Upload failed.'));
+                    }
                 } else
-                    return "No file specified";
+                    return $app['twig']->render('uploadresult.twig',
+                        array('success' => false,
+                            'text' => 'No file specified'));
             }
             else if($request->files->has('meowfile_remote')){
                 $file = $request->files->get('meowfile_remote');
