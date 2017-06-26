@@ -110,3 +110,8 @@ body {
 .buttontext{
     font-size: 25px;
 }
+
+#header-home{
+    margin-left: 15px;
+    margin-top: 9px;
+}
