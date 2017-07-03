@@ -21,6 +21,7 @@ namespace Meow
         private $originalSize;
         private $date;
         private $visibilityStatus;
+        private $protocol;
 
         private function __construct($rowData)
         {
@@ -40,6 +41,12 @@ namespace Meow
                 $this->visibilityStatus = $rowData['visibility_status'];
             else
                 $this->visibilityStatus = 1;
+
+            $isSSL = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                || $_SERVER['SERVER_PORT'] == 443;
+
+            $this->protocol = $isSSL ? 'https://' : 'http://';
+
         }
 
         public function GetFilePath()
@@ -119,7 +126,7 @@ namespace Meow
 
         public function GetCustomUrl()
         {
-            return 'http://'.$_SERVER['SERVER_NAME'] . '/i/' . $this->customUrl . '.' . $this->originalExtension;
+            return $this->protocol.$_SERVER['SERVER_NAME'] . '/i/' . $this->customUrl . '.' . $this->originalExtension;
         }
 
         public function GetMIME()
