@@ -5,6 +5,7 @@ namespace Meow
     use \Silex\Application;
     use Symfony\Component\Config\Definition\Exception\Exception;
     use \Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\HttpFoundation\ResponseHeaderBag;
     use \Symfony\Component\HttpFoundation\File;
 
@@ -43,6 +44,10 @@ namespace Meow
                     $storedFile = StoredFile::AddFileToStorage($file, $app['db'], $app['usermanager.service'], $remoteToken);
                     if($storedFile)
                     {
+                        if($request->request->get('plaintext'))
+                        {
+                            return new Response($storedFile->GetCustomUrl(), 201);
+                        }
                         $jsn = array(
                             'file' => $storedFile->GetCustomUrl()
                         );
