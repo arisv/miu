@@ -65,10 +65,10 @@ namespace Meow
                 dump('Serving: ' . $result->GetFilePath());
                 ob_end_clean();
                 if($result->ShouldEmbed())
-                    return $app->sendFile($result->GetFilePath(), 200, array('Content-Type: '.$result->GetMIME()));
+                    return $app->sendFile($result->GetFilePath(), 200, array());
                 else
                 {
-                    return $app->sendFile($result->GetFilePath(), 200, array('Content-Type: '.$result->GetMIME()))
+                    return $app->sendFile($result->GetFilePath(), 200, array())
                         ->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $result->GetOriginalName());
                 }
 
