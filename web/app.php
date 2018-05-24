@@ -51,7 +51,6 @@ $app->before(function () use ($app, $miu_config) {
     if($ums->HasLoggedUser())
     {
         $currentUser = $ums->GetCurrentUserData();
-        dump($currentUser);
         $app['usermanager.service.loggedUser'] = $currentUser;
         $app['twig']->addGlobal('userLogged', true);
         $app['twig']->addGlobal('userName', $currentUser->GetName());
@@ -81,7 +80,9 @@ $app->get('/', function() use ($app) {
 });
 
 //upload file requests go here
-$app->post('/getfile/','Meow\\FileLoader::AddNewFile');
+$app->match('/getfile/','Meow\\FileLoader::AddNewFile');
+
+$app->match('/mirrorfile/', 'Meow\\FileLoader::MirrorRemoteFile');
 
 //create account page
 $app->match('/signup/', function (Request $request) use ($app) {
@@ -221,7 +222,7 @@ $app->get('/manage/mypics/', function (Request $request) use ($app){
 
     $controlPanel = new \Meow\ControlPanel($app);
     $listOfImages = $controlPanel->GetCurrentUserImages($request, $userManager->GetCurrentUserID());
-    dump($listOfImages);
+    //dump($listOfImages);
 
     return $app['twig']->render('manage_mypics.twig', array(
         'page' => 'mypics',
@@ -242,7 +243,7 @@ $app->get('/manage/admin/users/', function (Request $request) use ($app){
     $controlPanel = new \Meow\ControlPanel($app);
     $userData = $controlPanel->GetAllUserIndex($request);
 
-    dump($userData);
+    //dump($userData);
     return $app['twig']->render('admin_users.twig', array(
         'page' => 'allpics',
         'userlist' => $userData));

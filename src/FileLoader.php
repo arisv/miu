@@ -7,11 +7,13 @@ namespace Meow
     use \Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+    use Symfony\Component\HttpFoundation\File\UploadedFile;
     use \Symfony\Component\HttpFoundation\File;
 
 
     class FileLoader
     {
+        private $maxFileSize = 1024 * 1024 * 100;
         public function AddNewFile(Request $request, Application $app)
         {
             if ($request->files->has('meowfile')) {
@@ -55,7 +57,64 @@ namespace Meow
                     }
                 }
             }
-            return "Wtf";
+            return $app['twig']->render('uploadresult.twig',
+                array('success' => false,
+                    'text' => 'No input specified'));
+        }
+
+        public function MirrorRemoteFile(Request $request, Application $app)
+        {
+            if($request->request->has('mirrorfile'))
+            {
+                $path = $request->request->get('mirrorfile');
+                $remoteSize = $this->QueryRemoteFileSize($path);
+
+                if($remoteSize < 1)
+                {
+                    return $app['twig']->render('uploadresult.twig',
+                        array('success' => false,
+                            'text' => 'Unable to get file size from the target server, upload aborted'));
+                }
+
+                if($remoteSize > $this->maxFileSize)
+                {
+                    return $app['twig']->render('uploadresult.twig',
+                        array('success' => false,
+                            'text' => 'Upload failed due to file size constraints'));
+                }
+
+                $savedFile = $this->FetchRemoteFile($path, $remoteSize);
+                $extractedFilename = $this->ExtractFilenameFromUrl($path);
+
+                $uploadedFile = new UploadedFile(
+                    $savedFile,
+                    $extractedFilename,
+                    null,
+                    $remoteSize,
+                    0,
+                    true
+                );
+
+
+                dump('Uploading file:');
+                $storedFile = StoredFile::AddFileToStorage($uploadedFile, $app['db'], $app['usermanager.service']);
+                if($storedFile)
+                {
+                    return $app['twig']->render('uploadresult.twig',
+                        array('success' => true,
+                            'link' => $storedFile->GetCustomUrl()));
+                }
+                else
+                {
+                    return $app['twig']->render('uploadresult.twig',
+                        array('success' => false,
+                            'text' => 'Upload failed.'));
+                }
+
+            }
+            return $app['twig']->render('uploadresult.twig',
+                array('success' => false,
+                    'text' => 'No input specified'));
         }
 
         public function ServeFileDirect(Request $request, Application $app, $customUrl, $fileExtension)
@@ -87,6 +146,48 @@ namespace Meow
         {
             dump($serviceUrl);
             return $serviceUrl;
+        }
+
+        public function QueryRemoteFileSize($url)
+        {
+            $ch = curl_init($url);
+
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($ch, CURLOPT_HEADER, TRUE);
+            curl_setopt($ch, CURLOPT_NOBODY, TRUE);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+            $data = curl_exec($ch);
+            $size = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+
+            curl_close($ch);
+            return $size;
+        }
+
+        public function FetchRemoteFile($url, $fileSize)
+        {
+            $tempPath = tempnam(sys_get_temp_dir(), 'miufile');
+            dump("Attempting to write {$fileSize} bytes from ${url} to ${tempPath}");
+            $fp = fopen($tempPath, 'w');
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+
+            $data = curl_exec($ch);
+
+            curl_close($ch);
+            fclose($fp);
+            dump("Written");
+            return $tempPath;
+        }
+
+        public function ExtractFilenameFromUrl($url)
+        {
+            $pathinfo = pathinfo($url);
+            if(!isset($pathinfo['filename']) || $pathinfo['filename'] == "")
+            {
+                return time();
+            }
+            return $pathinfo['filename'];
         }
 
     }

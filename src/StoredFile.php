@@ -86,13 +86,15 @@ namespace Meow
             $dt->setTimestamp($this->date);
             $storagePath = __DIR__.'/../storage/'. $dt->format('Y-m'). '/';
 
+            dump($this);
+
             $movestatus = true;
             try{
                 $file->move($storagePath, $this->internalName);
             }
             catch(Exception\FileException $e)
             {
-                dump($e->getMessage());
+                dump("Move to storage failed: {$e->getMessage()}");
                 $movestatus = false;
             }
             return $movestatus;
