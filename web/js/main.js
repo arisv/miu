@@ -1,5 +1,7 @@
 $('document').ready(
     function(){
-        new Clipboard('#clipboardbtn');
+        new Clipboard('.clipbutton');
+        $('#upload-legacy').hide();
+        $('#upload-dropzone').show();
     }
 );

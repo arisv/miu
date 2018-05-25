@@ -62,6 +62,41 @@ namespace Meow
                     'text' => 'No input specified'));
         }
 
+        public function HandleDropzoneRequest(Request $request, Application $app)
+        {
+            $status = array('success' => false, 'message' => 'No input supplied');
+            if($request->files->has('meowfile'))
+            {
+                /** @var UploadedFile $file */
+                $file = $request->files->get('meowfile');
+                if (!empty($file) && $file->isValid()) {
+                    dump('Handling dropzone request:');
+                    $storedFile = StoredFile::AddFileToStorage($file, $app['db'], $app['usermanager.service']);
+                    if($storedFile)
+                    {
+                        $status = array(
+                            'success' => true,
+                            'download' => $storedFile->GetCustomUrl()
+                        );
+                    }
+                    else
+                    {
+                        $status = array(
+                            'success' => false,
+                            'message' => "Upload failed"
+                        );
+                    }
+                } else {
+                    dump($file->getErrorMessage());
+                    $status = array(
+                        'success' => false,
+                        'message' => $file->getErrorMessage()
+                    );
+                }
+            }
+            return $app->json($status);
+        }
+
         public function MirrorRemoteFile(Request $request, Application $app)
         {
             if($request->request->has('mirrorfile'))

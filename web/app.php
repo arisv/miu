@@ -311,7 +311,10 @@ $app->get('/endpoint/endlesstrash/', function(Request $request) use ($app, $miu_
     return $app->json($response);
 });
 
+$app->post('/endpoint/dropzone/', 'Meow\\FileLoader::HandleDropzoneRequest');
+
 $app->error(function(\Exception $e) use($app) {
+    dump($e->getMessage());
     if($e->getMessage() == '404')
     {
         return $app['twig']->render('error_404.twig');
