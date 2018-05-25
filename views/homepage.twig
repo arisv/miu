@@ -52,7 +52,8 @@
                 url: '/endpoint/dropzone/',
                 paramName: 'meowfile',
                 maxFileSize: 100,
-                maxFiles: 4
+                maxFiles: 4,
+                timeout: 0
             });
             dz.on("success", function(file, reply){
                 console.log(reply);
