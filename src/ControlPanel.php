@@ -2,6 +2,7 @@
 
 
 namespace Meow;
+use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 
 
@@ -151,7 +152,7 @@ GROUP BY uploadlog.user_id";
             $qb = $this->db->createQueryBuilder();
             $qb->delete('uploadlog')
                 ->where('image_id IN (:deletedFiles)')
-                ->setParameter('deletedFiles', implode(',',$deletedFiles));
+                ->setParameter('deletedFiles', $deletedFiles, Connection::PARAM_STR_ARRAY);
             $messages['deletedTransaction'] = $qb->execute();
 
         }

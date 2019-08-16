@@ -113,6 +113,7 @@ namespace Meow
                 ->setValue('internal_mimetype', '?')
                 ->setValue('internal_size', '?')
                 ->setValue('date', '?')
+                ->setValue('visibility_status', '?')
                 ->setParameter(0, $this->originalName)
                 ->setParameter(1, $this->internalName)
                 ->setParameter(2, $this->customUrl)
@@ -120,7 +121,8 @@ namespace Meow
                 ->setParameter(4, $this->originalExtension)
                 ->setParameter(5, $this->internalMimetype)
                 ->setParameter(6, $this->originalSize)
-                ->setParameter(7, $this->date);
+                ->setParameter(7, $this->date)
+                ->setParameter(8, $this->visibilityStatus);
 
             $result = $queryBuilder->execute();
             return $db->lastInsertId(); //TODO: error checking, assume everything is always fine for now
