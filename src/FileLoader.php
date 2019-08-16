@@ -13,7 +13,7 @@ namespace Meow
 
     class FileLoader
     {
-        private $maxFileSize = 1024 * 1024 * 100;
+        private $maxFileSize = 1024 * 1024 * 125;
         public function AddNewFile(Request $request, Application $app)
         {
             if ($request->files->has('meowfile')) {

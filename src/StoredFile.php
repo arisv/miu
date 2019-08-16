@@ -146,7 +146,7 @@ namespace Meow
         //determine whether browser should embed file in the page or serve it as attachment (e.g archives)
         public function ShouldEmbed()
         {
-            return $this->IsType(array('image', 'audio', 'video/webm'));
+            return $this->IsType(array('image', 'audio', 'video/webm', 'video/mp4', 'video/3gpp', 'video/quicktime', 'video/x-flv'));
         }
 
         public function IsImage()
